@@ -1,8 +1,15 @@
 # moviestesting
 
-Spring Boot project created from [Spring Initializr](https://start.spring.io/) to implement and run automated tests for the **movies-app** application:
+Spring Boot project created from [Spring Initializr](https://start.spring.io/) and used only to run automated tests for **movies-app**:
 
 - Target repository: https://github.com/enrikesancheztec/movies-app/
+
+## Purpose
+
+This repository is a **test automation project only**.
+
+- It is not intended to run business APIs.
+- It is used to execute Selenium E2E validations against a running `movies-app` web instance.
 
 ## Project Properties
 
@@ -24,65 +31,112 @@ Spring Boot project created from [Spring Initializr](https://start.spring.io/) t
 
 - Java 17 installed and available in `PATH`
 - Permissions to run `./mvnw` on macOS/Linux
+- `movies-app` web application running and reachable from this machine
 
-## Build
+## Environment Configuration For E2E Tests
 
-### macOS / Linux
+E2E tests resolve the web base URL in this order:
+
+1. JVM property: `-Dweb.base.url=...`
+2. Environment variable: `WEB_BASE_URL`
+3. Local file: `env.properties` (`web.base.url=...`)
+4. Default fallback: `http://localhost:3000`
+
+### Use `env.properties`
+
+1. Copy `env.properties.example` to `env.properties`.
+2. Set your target URL.
+
+Example:
+
+```properties
+web.base.url=http://localhost:3000
+```
+
+Notes:
+
+- `env.properties` is ignored by git.
+- `env.properties.example` is tracked as a template.
+
+## Build And Compile Tests
+
+### macOS/Linux
 
 ```bash
-./mvnw clean verify
+./mvnw clean test-compile
 ```
 
-### Windows (PowerShell / CMD)
+### Windows (PowerShell/CMD)
 
 ```powershell
-mvnw.cmd clean verify
-```
-
-## Run the Project
-
-### macOS / Linux
-
-```bash
-./mvnw spring-boot:run
-```
-
-### Windows (PowerShell / CMD)
-
-```powershell
-mvnw.cmd spring-boot:run
+mvnw.cmd clean test-compile
 ```
 
 ## Run Tests
 
-### macOS / Linux
+### Run all tests (macOS/Linux)
 
 ```bash
 ./mvnw test
 ```
 
-### Windows (PowerShell / CMD)
+### Run all tests (Windows PowerShell/CMD)
 
 ```powershell
 mvnw.cmd test
 ```
 
-## Packaged Artifact
+### Run one test class
 
-When building the project, Maven generates the artifact at:
-
-- `target/moviestesting-0.0.1-SNAPSHOT.jar`
-
-You can run it with:
+macOS/Linux:
 
 ```bash
-java -jar target/moviestesting-0.0.1-SNAPSHOT.jar
+./mvnw -Dtest=ListProducersTest test
 ```
+
+Windows PowerShell/CMD:
+
+```powershell
+mvnw.cmd -Dtest=ListProducersTest test
+```
+
+### Run one specific test method
+
+macOS/Linux:
+
+```bash
+./mvnw -Dtest=CreateProducersTest#shouldCreateProducerAndShowItInList test
+```
+
+Windows PowerShell/CMD:
+
+```powershell
+mvnw.cmd -Dtest=CreateProducersTest#shouldCreateProducerAndShowItInList test
+```
+
+### Run tests with custom target URL
+
+macOS/Linux:
+
+```bash
+./mvnw -Dweb.base.url=http://10.0.0.5:3000 -Dtest=CreateProducersTest test
+```
+
+Windows PowerShell/CMD:
+
+```powershell
+mvnw.cmd -Dweb.base.url=http://10.0.0.5:3000 -Dtest=CreateProducersTest test
+```
+
+## Current E2E Test Areas
+
+- Producers list page validations
+- Producer details link validations
+- Create producer validations (empty name and valid save flow)
 
 ## Notes
 
-- This project is prepared as a base to add tests (unit, integration, or end-to-end) focused on validating `movies-app` behavior.
-- The current configuration file (`src/main/resources/application.properties`) defines:
+- Main app config still defines:
 
 ```properties
 spring.application.name=moviestesting

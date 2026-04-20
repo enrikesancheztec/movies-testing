@@ -12,14 +12,18 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import com.kikesoft.moviestesting.e2e.E2eConfig;
+
 class ListProducersTest {
+
+    private static final String LIST_URL = E2eConfig.baseUrl() + "/en-US/producers";
 
     @Test
     void shouldDisplayProducersListText() {
         WebDriver driver = new ChromeDriver();
 
         try {
-            driver.get("http://localhost:3000/en-US/producers");
+            driver.get(LIST_URL);
 
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
             boolean isTextVisible = wait.until(
@@ -37,7 +41,7 @@ class ListProducersTest {
         WebDriver driver = new ChromeDriver();
 
         try {
-            driver.get("http://localhost:3000/en-US/producers");
+            driver.get(LIST_URL);
 
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
             wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("[data-testid='producers-list']")));

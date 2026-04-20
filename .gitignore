@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Local E2E environment overrides
+env.properties
+!env.properties.example

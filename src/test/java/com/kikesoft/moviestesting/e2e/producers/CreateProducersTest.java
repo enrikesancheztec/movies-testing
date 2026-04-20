@@ -14,10 +14,12 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import com.kikesoft.moviestesting.e2e.E2eConfig;
+
 class CreateProducersTest {
 
-    private static final String LIST_URL = "http://localhost:3000/en-US/producers";
-    private static final String CREATE_URL = "http://localhost:3000/en-US/producers/create";
+    private static final String LIST_URL = E2eConfig.baseUrl() + "/en-US/producers";
+    private static final String CREATE_URL = E2eConfig.baseUrl() + "/en-US/producers/create";
 
     @Test
     void shouldKeepSaveDisabledWhenNameIsEmpty() {
