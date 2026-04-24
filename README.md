@@ -134,6 +134,78 @@ mvnw.cmd -Dweb.base.url=http://10.0.0.5:3000 -Dtest=CreateProducersTest test
 - Producer details link validations
 - Create producer validations (empty name and valid save flow)
 
+## BOT Pattern For E2E Tests
+
+This project uses a BOT pattern for Selenium E2E tests to keep test scenarios readable and reduce duplicated browser automation logic.
+
+### Why this pattern
+
+- Tests focus on scenario intent and assertions.
+- Bots encapsulate navigation, waits, selectors, and user interactions.
+- Shared Selenium setup is centralized and reusable.
+
+### Current BOT structure
+
+- `src/test/java/com/kikesoft/moviestesting/e2e/bots/BaseBot.java`
+	- Shared behavior for route opening and wait helpers.
+- `src/test/java/com/kikesoft/moviestesting/e2e/bots/ProducersBot.java`
+	- Producer-specific user actions and queries.
+- `src/test/java/com/kikesoft/moviestesting/e2e/support/DriverFactory.java`
+	- WebDriver creation.
+- `src/test/java/com/kikesoft/moviestesting/e2e/support/WaitSupport.java`
+	- Standardized Selenium wait creation and helper conditions.
+
+### Responsibility split
+
+- Test classes:
+	- Describe behavior.
+	- Execute high-level bot actions.
+	- Assert expected outcomes.
+- Bot classes:
+	- Hide CSS selectors and element lookups.
+	- Handle page synchronization/waits.
+	- Expose business-level actions.
+
+## How To Add More E2E Tests
+
+Follow this flow when creating new tests:
+
+1. Identify a user flow to validate (for example, a create/edit/list/detail flow).
+2. Add or extend a bot class under `src/test/java/com/kikesoft/moviestesting/e2e/bots`.
+3. Keep selectors and navigation inside the bot, not in test methods.
+4. Create a test class under the related package (for example, `src/test/java/com/kikesoft/moviestesting/e2e/producers`).
+5. Use `DriverFactory` to create the browser driver.
+6. Use bot methods in tests, then assert behavior in the test class.
+7. Run the new tests locally and verify stability.
+
+### Minimal test template
+
+```java
+@Test
+void shouldValidateExpectedBehavior() {
+		WebDriver driver = DriverFactory.createChromeDriver();
+
+		try {
+				ProducersBot producersBot = new ProducersBot(driver);
+
+				producersBot.openList();
+				producersBot.waitUntilListReady();
+
+				assertTrue(producersBot.isListTitleVisible());
+		} finally {
+				driver.quit();
+		}
+}
+```
+
+### Good practices for new tests
+
+- Keep one test focused on one business behavior.
+- Prefer explicit wait logic inside bots instead of sleeps.
+- Reuse existing bot methods before adding new ones.
+- Add new bot methods only when they represent reusable behavior.
+- Fail fast with clear assertion messages.
+
 ## Notes
 
 - Main app config still defines:
