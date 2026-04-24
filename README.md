@@ -9,7 +9,7 @@ Spring Boot project created from [Spring Initializr](https://start.spring.io/) a
 This repository is a **test automation project only**.
 
 - It is not intended to run business APIs.
-- It is used to execute Selenium E2E validations against a running `movies-app` web instance.
+- It is used to execute Selenium E2E validations against a running movies-app web instance.
 
 ## Project Properties
 
@@ -26,12 +26,15 @@ This repository is a **test automation project only**.
 
 - `org.springframework.boot:spring-boot-starter`
 - `org.springframework.boot:spring-boot-starter-test` (scope `test`)
+- `org.seleniumhq.selenium:selenium-java` (scope `test`)
+- `io.cucumber:cucumber-java` (scope `test`)
+- `io.cucumber:cucumber-junit-platform-engine` (scope `test`)
 
 ## Prerequisites
 
 - Java 17 installed and available in `PATH`
 - Permissions to run `./mvnw` on macOS/Linux
-- `movies-app` web application running and reachable from this machine
+- movies-app web application running and reachable from this machine
 
 ## Environment Configuration For E2E Tests
 
@@ -58,6 +61,57 @@ Notes:
 - `env.properties` is ignored by git.
 - `env.properties.example` is tracked as a template.
 
+## Testing Pattern
+
+This project uses **Cucumber + BOT pattern** for all Selenium E2E tests.
+
+### Architecture
+
+- Feature files define behavior in Gherkin.
+- Step definitions map behavior to bot actions and assertions.
+- Hooks manage browser lifecycle per scenario.
+- Bots encapsulate selectors, waits, and page interactions.
+
+### Key Structure
+
+- `src/test/resources/features/`
+	- Feature files by domain (for example, `features/producers`).
+- `src/test/java/com/kikesoft/moviestesting/e2e/cucumber/`
+	- Cucumber suite, hooks, and scenario context.
+- `src/test/java/com/kikesoft/moviestesting/e2e/cucumber/<domain>/`
+	- Step definitions by domain.
+- `src/test/java/com/kikesoft/moviestesting/e2e/bots/`
+	- BOT classes with reusable Selenium behavior.
+- `src/test/java/com/kikesoft/moviestesting/e2e/support/`
+	- Shared driver and wait utilities.
+
+## How To Add New Tests
+
+1. Identify the user behavior to validate.
+2. Add or update a feature file under `src/test/resources/features/<domain>/`.
+3. Add or update step definitions under `src/test/java/com/kikesoft/moviestesting/e2e/cucumber/<domain>/`.
+4. Reuse existing bot methods from `src/test/java/com/kikesoft/moviestesting/e2e/bots/`.
+5. If needed, add new high-level bot methods. Do not add selectors in step definitions.
+6. Keep waits in bots/support classes only.
+7. Run Cucumber locally and confirm scenarios pass.
+
+### Minimal Feature Example
+
+```gherkin
+@producers
+Scenario: Producers list page is visible
+	Given the user opens the producers list page
+	Then the producers list title should be visible
+```
+
+### Rules For Consistency
+
+- One scenario should validate one behavior.
+- Use business-readable scenario names.
+- Reuse steps when possible; avoid duplicated phrases.
+- Keep selectors only in bot classes.
+- Keep synchronization logic in bot/support classes.
+
 ## Build And Compile Tests
 
 ### macOS/Linux
@@ -74,58 +128,74 @@ mvnw.cmd clean test-compile
 
 ## Run Tests
 
-### Run all tests (macOS/Linux)
+### Run full test suite
+
+macOS/Linux:
 
 ```bash
 ./mvnw test
 ```
 
-### Run all tests (Windows PowerShell/CMD)
+Windows PowerShell/CMD:
 
 ```powershell
 mvnw.cmd test
 ```
 
-### Run one test class
+### Run full Cucumber E2E suite
 
 macOS/Linux:
 
 ```bash
-./mvnw -Dtest=ListProducersTest test
+./mvnw -Dtest=CucumberTestSuite test
 ```
 
 Windows PowerShell/CMD:
 
 ```powershell
-mvnw.cmd -Dtest=ListProducersTest test
+mvnw.cmd -Dtest=CucumberTestSuite test
 ```
 
-### Run one specific test method
+### Run a specific set of scenarios by tags
 
 macOS/Linux:
 
 ```bash
-./mvnw -Dtest=CreateProducersTest#shouldCreateProducerAndShowItInList test
+./mvnw -Dtest=CucumberTestSuite -Dcucumber.filter.tags="@producers and @create" test
 ```
 
 Windows PowerShell/CMD:
 
 ```powershell
-mvnw.cmd -Dtest=CreateProducersTest#shouldCreateProducerAndShowItInList test
+mvnw.cmd -Dtest=CucumberTestSuite -Dcucumber.filter.tags="@producers and @create" test
 ```
 
-### Run tests with custom target URL
+### Run a specific scenario by name
 
 macOS/Linux:
 
 ```bash
-./mvnw -Dweb.base.url=http://10.0.0.5:3000 -Dtest=CreateProducersTest test
+./mvnw -Dtest=CucumberTestSuite -Dcucumber.filter.name="User creates a producer successfully" test
 ```
 
 Windows PowerShell/CMD:
 
 ```powershell
-mvnw.cmd -Dweb.base.url=http://10.0.0.5:3000 -Dtest=CreateProducersTest test
+mvnw.cmd -Dtest=CucumberTestSuite -Dcucumber.filter.name="User creates a producer successfully" test
+```
+
+### Run Cucumber suite with custom target URL
+
+macOS/Linux:
+
+```bash
+./mvnw -Dweb.base.url=http://10.0.0.5:3000 -Dtest=CucumberTestSuite test
+```
+
+Windows PowerShell/CMD:
+
+```powershell
+mvnw.cmd -Dweb.base.url=http://10.0.0.5:3000 -Dtest=CucumberTestSuite test
 ```
 
 ## Current E2E Test Areas
@@ -133,78 +203,6 @@ mvnw.cmd -Dweb.base.url=http://10.0.0.5:3000 -Dtest=CreateProducersTest test
 - Producers list page validations
 - Producer details link validations
 - Create producer validations (empty name and valid save flow)
-
-## BOT Pattern For E2E Tests
-
-This project uses a BOT pattern for Selenium E2E tests to keep test scenarios readable and reduce duplicated browser automation logic.
-
-### Why this pattern
-
-- Tests focus on scenario intent and assertions.
-- Bots encapsulate navigation, waits, selectors, and user interactions.
-- Shared Selenium setup is centralized and reusable.
-
-### Current BOT structure
-
-- `src/test/java/com/kikesoft/moviestesting/e2e/bots/BaseBot.java`
-	- Shared behavior for route opening and wait helpers.
-- `src/test/java/com/kikesoft/moviestesting/e2e/bots/ProducersBot.java`
-	- Producer-specific user actions and queries.
-- `src/test/java/com/kikesoft/moviestesting/e2e/support/DriverFactory.java`
-	- WebDriver creation.
-- `src/test/java/com/kikesoft/moviestesting/e2e/support/WaitSupport.java`
-	- Standardized Selenium wait creation and helper conditions.
-
-### Responsibility split
-
-- Test classes:
-	- Describe behavior.
-	- Execute high-level bot actions.
-	- Assert expected outcomes.
-- Bot classes:
-	- Hide CSS selectors and element lookups.
-	- Handle page synchronization/waits.
-	- Expose business-level actions.
-
-## How To Add More E2E Tests
-
-Follow this flow when creating new tests:
-
-1. Identify a user flow to validate (for example, a create/edit/list/detail flow).
-2. Add or extend a bot class under `src/test/java/com/kikesoft/moviestesting/e2e/bots`.
-3. Keep selectors and navigation inside the bot, not in test methods.
-4. Create a test class under the related package (for example, `src/test/java/com/kikesoft/moviestesting/e2e/producers`).
-5. Use `DriverFactory` to create the browser driver.
-6. Use bot methods in tests, then assert behavior in the test class.
-7. Run the new tests locally and verify stability.
-
-### Minimal test template
-
-```java
-@Test
-void shouldValidateExpectedBehavior() {
-		WebDriver driver = DriverFactory.createChromeDriver();
-
-		try {
-				ProducersBot producersBot = new ProducersBot(driver);
-
-				producersBot.openList();
-				producersBot.waitUntilListReady();
-
-				assertTrue(producersBot.isListTitleVisible());
-		} finally {
-				driver.quit();
-		}
-}
-```
-
-### Good practices for new tests
-
-- Keep one test focused on one business behavior.
-- Prefer explicit wait logic inside bots instead of sleeps.
-- Reuse existing bot methods before adding new ones.
-- Add new bot methods only when they represent reusable behavior.
-- Fail fast with clear assertion messages.
 
 ## Notes
 
