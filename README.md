@@ -72,60 +72,142 @@ Notes:
 mvnw.cmd clean test-compile
 ```
 
+## Cucumber And Gherkin Overview
+
+This project uses Cucumber as the E2E test runner and Gherkin as the language for writing executable business scenarios.
+
+- Cucumber maps human-readable scenario steps (Given/When/Then) to Java step definitions.
+- Gherkin is the plain-language syntax used in `.feature` files.
+
+Official documentation:
+
+- Cucumber docs: https://cucumber.io/docs
+- Cucumber JVM docs: https://cucumber.io/docs/installation/java/
+- Gherkin reference: https://cucumber.io/docs/gherkin/reference/
+
 ## Run Tests
 
-### Run all tests (macOS/Linux)
+Default test execution is Cucumber-first and runs the `CucumberTestSuite` entry point.
+
+### Run all Cucumber tests (macOS/Linux)
 
 ```bash
 ./mvnw test
 ```
 
-### Run all tests (Windows PowerShell/CMD)
+## Add New Tests
+
+Follow this workflow to add a new Cucumber test:
+
+1. Create or update a feature file under `src/test/resources/features`.
+2. Write scenarios using Gherkin syntax (`Feature`, `Scenario`, `Given`, `When`, `Then`).
+3. Reuse an existing tag (for example `@producers`) or add a new tag.
+4. Implement matching Java step definitions under `src/test/java/com/kikesoft/moviestesting/e2e/cucumber`.
+5. If browser setup is needed, reuse existing hooks (`@Before`/`@After`) patterns from current steps.
+6. Run a dry-run check to validate glue mapping and ensure no undefined steps.
+7. Run the full suite to validate runtime behavior.
+
+### Example: Add a new feature file
+
+Create a file like `src/test/resources/features/movies/list_movies.feature`:
+
+```gherkin
+@movies
+Feature: List movies
+
+	Scenario: Display movies list page text
+		Given I open the movies list page
+		Then I should see "Movies List" text on the page
+```
+
+Then implement corresponding step definitions in Java.
+
+### Validate newly added tests
+
+Dry-run mapping check (fast, no browser execution):
+
+```bash
+./mvnw -Dtest=CucumberTestSuite test -Dcucumber.execution.dry-run=true
+```
+
+Full runtime validation:
+
+```bash
+./mvnw test
+```
+
+### Run all Cucumber tests (Windows PowerShell/CMD)
 
 ```powershell
 mvnw.cmd test
 ```
 
-### Run one test class
-
-macOS/Linux:
+### Run Cucumber suite explicitly (macOS/Linux)
 
 ```bash
-./mvnw -Dtest=ListProducersTest test
+./mvnw -Dtest=CucumberTestSuite test
 ```
 
-Windows PowerShell/CMD:
+### Run Cucumber suite explicitly (Windows PowerShell/CMD)
 
 ```powershell
-mvnw.cmd -Dtest=ListProducersTest test
+mvnw.cmd -Dtest=CucumberTestSuite test
 ```
 
-### Run one specific test method
-
-macOS/Linux:
+### Run tagged Cucumber scenarios (macOS/Linux)
 
 ```bash
-./mvnw -Dtest=CreateProducersTest#shouldCreateProducerAndShowItInList test
+./mvnw test -Dcucumber.filter.tags="@producers"
 ```
 
-Windows PowerShell/CMD:
+### Run tagged Cucumber scenarios (Windows PowerShell/CMD)
 
 ```powershell
-mvnw.cmd -Dtest=CreateProducersTest#shouldCreateProducerAndShowItInList test
+mvnw.cmd test -Dcucumber.filter.tags="@producers"
 ```
 
-### Run tests with custom target URL
-
-macOS/Linux:
+### Run tagged Cucumber scenarios with exclusions (macOS/Linux)
 
 ```bash
-./mvnw -Dweb.base.url=http://10.0.0.5:3000 -Dtest=CreateProducersTest test
+./mvnw test -Dcucumber.filter.tags="@producers and not @wip"
 ```
 
-Windows PowerShell/CMD:
+### Run tagged Cucumber scenarios with exclusions (Windows PowerShell/CMD)
 
 ```powershell
-mvnw.cmd -Dweb.base.url=http://10.0.0.5:3000 -Dtest=CreateProducersTest test
+mvnw.cmd test -Dcucumber.filter.tags="@producers and not @wip"
+```
+
+### Run Cucumber tests with custom target URL (macOS/Linux)
+
+```bash
+./mvnw test -Dweb.base.url=http://10.0.0.5:3000
+```
+
+### Run Cucumber tests with custom target URL (Windows PowerShell/CMD)
+
+```powershell
+mvnw.cmd test -Dweb.base.url=http://10.0.0.5:3000
+```
+
+### Run tagged Cucumber tests with custom target URL (macOS/Linux)
+
+```bash
+./mvnw test -Dweb.base.url=http://10.0.0.5:3000 -Dcucumber.filter.tags="@producers"
+```
+
+### Run tagged Cucumber tests with custom target URL (Windows PowerShell/CMD)
+
+```powershell
+mvnw.cmd test -Dweb.base.url=http://10.0.0.5:3000 -Dcucumber.filter.tags="@producers"
+```
+
+### CI recommendation
+
+Use the same default command in CI for deterministic Cucumber-first execution:
+
+```bash
+./mvnw test
 ```
 
 ## Current E2E Test Areas
