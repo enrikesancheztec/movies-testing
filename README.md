@@ -1,3 +1,29 @@
+
+## Test Reports (Cucumber & Maven)
+
+After running the tests with Maven, the project automatically generates several types of reports:
+
+- **Cucumber HTML Report:**
+	- Location: `target/cucumber-reports/cucumber.html`
+	- Open this file in your browser to view a detailed, visual summary of all executed scenarios.
+
+- **Cucumber JSON Report:**
+	- Location: `target/cucumber-reports/cucumber.json`
+	- Useful for integrations with other tools or CI pipelines.
+
+- **JUnit XML Report (Surefire):**
+	- Location: `target/surefire-reports/TEST-com.kikesoft.moviestesting.e2e.cucumber.CucumberTestSuite.xml`
+	- Compatible with most CI/CD systems for test result visualization.
+
+### How to generate and view reports
+
+1. Run all tests:
+	 ```bash
+	 ./mvnw test
+	 ```
+2. Open `target/cucumber-reports/cucumber.html` in your browser to see the results.
+
+These reports are updated every time you run the test suite.
 # moviestesting
 
 Spring Boot project created from [Spring Initializr](https://start.spring.io/) and used only to run automated tests for **movies-app**:
